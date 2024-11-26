@@ -127,8 +127,8 @@ Note that this struct is 16-byte aligned, which is why the reflectivity vector h
 - `signature` is always the fourCC code `"VTF\0"`.
 - `majorVersion` is always 7.
 - `minorVersion` ranges from 0 to 6.
-- `headerSize` is the same as the DDS `headerSize`, except this header is smaller since they don't have tons of reserved space.
-- `width` and `height` as the same as in DDS, the width and height of the base mip.
+- `headerSize` is the same as the DDS `headerSize`, except this header is smaller since it doesn't have tons of reserved space.
+- `width` and `height` is the same as in DDS, the width and height of the base mip.
 - `flags` is actually different than DDS, and is more what you'd expect from a field named flags. It stores flags. See [Appendix A](#appendix-a-vtf-flags)
   for more information on supported flags.
 - `frameCount` is the number of "frames", and `startFrame` is the first frame in the animation sequence. Again, more on this later!
@@ -138,14 +138,14 @@ Note that this struct is 16-byte aligned, which is why the reflectivity vector h
 - `format` is the same as in DDS, the format of the image data stored in the file. See [Appendix B](#appendix-b-supported-image-formats)
   for more information on supported format types.
 - `mipCount` is renamed from `mipMapCount` in DDS.
-- `thumbnailFormat`, `thumbnailWidth`, and `thumbnailHeight` are for the texture thumbnail. More on this later.
+- `thumbnailFormat`, `thumbnailWidth`, and `thumbnailHeight` are for the VTF thumbnail. More on this later.
 
 Thumbnail data is stored immediately after the header, followed by the image data.
 
-A thumbnail is a low-resolution copy of the base image, which the engine uses in a couple places when it needs to know general information
+The thumbnail is a low-resolution copy of the base image, which the engine uses in a couple places when it needs to know general information
 about the brightness of the texture. It needs to know this information in 2D space, so using the reflectivity vector doesn't work. The
-thumbnail format should always be treated as DXT1 even if the format field is different, because there are a few official VTFs that have the
-wrong format in this field, and every VTF creation tool will create the thumbnail with the DXT1 format. The size of the thumbnail is always
+thumbnail format should always be treated as `DXT1` even if the format field is different, because there are a few official VTFs that have the
+wrong format in this field, and every VTF creation tool will create the thumbnail with the `DXT1` format. The size of the thumbnail is always
 observed to be 16x16. Custom sizes should work, but there's no need to go higher, or deviate from what Valve's official tooling produces.
 
 {{<figure src="fig_thumb.webp" alt="A diagram of the base image being used to create the thumbnail and the reflectivity vector." position="center" caption="The base image is used to calculate both the thumbnail and the reflectivity vector." captionPosition="center">}}
@@ -369,7 +369,7 @@ struct AXC_V2 {
 {{</code>}}
 
 By splitting the compression strength into two shorts, since compression strength was only ever used to store a value between -1 and 9 inclusive,
-and VTF is stored in little endian, we can take advantage of the wasted space to store the compression method in a backwards-compatible way. There
+and VTF is stored in little endian, we can take advantage of the empty space to store the compression method in a backwards-compatible way. There
 are three accepted value ranges for `compressionMethod`.
 
 - <=0: Identifies the first iteration of AXC, using Deflate compression.
