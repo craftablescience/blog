@@ -1,0 +1,59 @@
+baseURL = 'https://craftablescience.info/blog/'
+languageCode = 'en-us'
+title = 'craftablescience::blog'
+copyright = 'CC0'
+theme = 'terminal'
+
+[markup.goldmark.renderer]
+unsafe= true
+
+[pagination]
+pagerSize = 999
+
+[params]
+  contentTypeName = 'posts'
+  showMenuItems = 3
+  showLanguageSelector = false
+  fullWidthTheme = false
+  centerTheme = true
+  autoCover = false
+  showLastUpdated = false
+  enableGitInfo = false
+  Toc = true
+
+[languages]
+  [languages.en]
+    languageName = 'English'
+    title = 'craftablescience::blog'
+
+    [languages.en.params]
+      subtitle = 'a blog where i talk about whatever i want'
+      owner = 'craftablescience'
+      copyright = 'CC0'
+      menuMore = 'Show more'
+      readMore = 'Read more'
+      readOtherPosts = 'Read other posts'
+      newerPosts = 'Newer posts'
+      olderPosts = 'Older posts'
+      missingContentMessage = 'Oops! Page not found .-.'
+      missingBackButtonLabel = 'Back to home page'
+      minuteReadingTime = 'min read'
+      words = 'words'
+
+      [languages.en.params.logo]
+        logoText = 'craftablescience::blog'
+        logoHomeLink = '/blog'
+
+    [languages.en.menu]
+      [[languages.en.menu.main]]
+        identifier = 'github'
+        name = 'github'
+        url = 'https://github.com/craftablescience'
+      [[languages.en.menu.main]]
+        identifier = 'home'
+        name = 'home'
+        url = 'https://craftablescience.info'
+      [[languages.en.menu.main]]
+        identifier = 'tags'
+        name = 'tags'
+        url = '/tags'
