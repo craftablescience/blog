@@ -7,32 +7,31 @@ tags = ["source-engine", "file-format"]
 description = "A deep dive into the evolution and inner workings of VTF files."
 showFullContent = false
 readingTime = true
-hideComments = true
 +++
 
 ## Background / Definitions
 
-At this point I'm going to assume you are a smart cookie and know what textures are, and why engines need to use custom file formats
-to store them.
+At this point I'm going to assume you are a smart cookie and know what textures are, and why engines need to use custom
+file formats to store them.
 
 (tl;dr it's more efficient than loading more accessible formats like PNG, some types of image data cannot be stored in
-accessible formats like PNG, engines frequently need to assign textures metadata which cannot be done in most accessible formats like
-PNG)
+accessible formats like PNG, engines frequently need to assign textures metadata which cannot be done in most accessible
+formats like PNG)
 
-From this point forward, when I say "image", "image data", or "texture data" I'm referring to a two dimensional array of pixels, and
-not a file like PNG or VTF.
+From this point forward, when I say "image", "image data", or "texture data" I'm referring to a two-dimensional array of
+pixels, and not a file like PNG or VTF.
 
-Finally, I'd like to note that I have no experience with the VTF format for console versions of Source, so this post will strictly
-focus on the VTF formats found on PC. Console VTFs seem to be very similar, and I might make a separate blog post about them in the
-future when I have more experience working with them.
+Finally, I'd like to note that I have no experience with the VTF format for console versions of Source, so this post
+will strictly focus on the VTF formats found on PC. Console VTFs seem to be very similar, and I might make a separate
+blog post about them in the future when I have more experience working with them.
 
 Anyway now that that's out of the way, let's get into this format.
 
 ## DDS
 
-Since the first iteration of VTF is based on the DDS file format, let's go over that first, and then we can see what Valve took
-inspiration from. Skip past this section if you already know what DDS looks like or don't particularly care. The
-[DDS header specification](https://learn.microsoft.com/en-us/windows/win32/direct3ddds/dds-header) looks like this:
+Since the first iteration of VTF is based on the DDS file format, let's go over that first, and then we can see what
+Valve took inspiration from. Skip past this section if you already know what DDS looks like or don't particularly care.
+The [DDS header specification](https://learn.microsoft.com/en-us/windows/win32/direct3ddds/dds-header) looks like this:
 
 {{<code language="cpp" title="DDS Header">}}
 struct DDS_Header {
@@ -62,12 +61,12 @@ struct DDS_Header {
 - `headerSize` is always 124 bytes.
 - `flags` is poorly named, essentially stores a flag for every field of the header with valid data.
 - `height` and `width` store the dimensions of the base image (the first mip level).
-- `pitchOrLinearSize` stores the pitch (number of bytes per scan line) in uncompressed textures, or the size in bytes of the
-  first mip level in compressed textures.
-- `depth` stores the size of the image in the third dimension (number of layers of a volume texture), if the texture is not a
-  volume texture it may not be set to a valid value.
-- `mipMapCount` is self-explanatory, the number of mipmaps stored in the file. Mipmaps are images shrunken by a power of two
-  from the image that came before it.
+- `pitchOrLinearSize` stores the pitch (number of bytes per scan line) in uncompressed textures, or the size in bytes of
+  the first mip level in compressed textures.
+- `depth` stores the size of the image in the third dimension (number of layers of a volume texture), if the texture is
+  not a volume texture it may not be set to a valid value.
+- `mipMapCount` is self-explanatory, the number of mipmaps stored in the file. Mipmaps are images shrunken by a power of
+  two from the image that came before it.
 - `format` is the format of the image data stored in the file.
 - `caps1` and `caps2` together define the type of the stored texture (volume texture? cubemap texture?).
 
@@ -81,14 +80,15 @@ Immediately following this header is the image data. The entire file looks somet
 
 ## VTF
 
-DDS is a nice generic format, but its generic-ness made it unsuited for Valve's purposes. Valve needs to store several things
-in their textures that the stock DDS header doesn't make room for, e.g. a reflectivity vector for faster radiosity calculations.
+DDS is a nice generic format, but its generic-ness made it unsuited for Valve's purposes. Valve needs to store several
+things in their textures that the stock DDS header doesn't make room for, e.g. a reflectivity vector for faster
+radiosity calculations.
 
 ### Early VTF (v7.0-7.2)
 
-VTF may have gone through several internal revisions before the first format we know of publicly, since the major version (yes,
-major, there are two version integers) has always been set to 7. The minor version is what gets updated when the format changes,
-and it starts at 0. This is what the first public iteration of VTF's header looks like.
+VTF may have gone through several internal revisions before the first format we know of publicly, since the major
+version (yes, major, there are two version integers) has always been set to 7. The minor version is what gets updated
+when the format changes, and it starts at 0. This is what the first public iteration of VTF's header looks like.
 
 {{<code language="cpp" title="VTF Header">}}
 #pragma pack(push, 16)
@@ -127,13 +127,16 @@ Note that this struct is 16-byte aligned, which is why the reflectivity vector h
 - `signature` is always the fourCC code `"VTF\0"`.
 - `majorVersion` is always 7.
 - `minorVersion` ranges from 0 to 6.
-- `headerSize` is the same as the DDS `headerSize`, except this header is smaller since it doesn't have tons of reserved space.
+- `headerSize` is the same as the DDS `headerSize`, except this header is smaller since it doesn't have tons of reserved
+  space.
 - `width` and `height` is the same as in DDS, the width and height of the base mip.
-- `flags` is actually different than DDS, and is more what you'd expect from a field named flags. It stores flags. See [Appendix A](#appendix-a-vtf-flags)
-  for more information on supported flags.
-- `frameCount` is the number of "frames", and `startFrame` is the first frame in the animation sequence. Again, more on this later!
-- `reflectivity` stores the overall reflectivity of the texture, to be used in radiosity calculations. Valve's method of calculating it
-  is apparently adding all the pixels' RGB values together, then dividing by the number of pixels. The reflectivity is stored in RGB order.
+- `flags` is actually different than DDS, and is more what you'd expect from a field named flags. It stores flags. See
+  [Appendix A](#appendix-a-vtf-flags) for more information on supported flags.
+- `frameCount` is the number of "frames", and `startFrame` is the first frame in the animation sequence. Again, more on
+  this later!
+- `reflectivity` stores the overall reflectivity of the texture, to be used in radiosity calculations. Valve's method of
+  calculating it is apparently adding all the pixels' RGB values together, then dividing by the number of pixels. The
+  reflectivity is stored in RGB order.
 - `bumpMapScale` controls the intensity of the bump map, if this texture is a bump map. It can be ignored otherwise.
 - `format` is the same as in DDS, the format of the image data stored in the file. See [Appendix B](#appendix-b-supported-image-formats)
   for more information on supported format types.
@@ -142,29 +145,34 @@ Note that this struct is 16-byte aligned, which is why the reflectivity vector h
 
 Thumbnail data is stored immediately after the header, followed by the image data.
 
-The thumbnail is a low-resolution copy of the base image, which the engine uses in a couple places when it needs to know general information
-about the brightness of the texture. It needs to know this information in 2D space, so using the reflectivity vector doesn't work. The
-thumbnail format should always be treated as `DXT1` even if the format field is different, because there are a few official VTFs that have the
-wrong format in this field, and every VTF creation tool will create the thumbnail with the `DXT1` format. The size of the thumbnail is always
-observed to be 16x16. Custom sizes should work, but there's no need to go higher, or deviate from what Valve's official tooling produces.
+The thumbnail is a low-resolution copy of the base image, which the engine uses in a couple places when it needs to know
+general information about the brightness of the texture. It needs to know this information in 2D space, so using the
+reflectivity vector doesn't work. The thumbnail format should always be treated as `DXT1` even if the format field is
+different, because there are a few official VTFs that have the wrong format in this field, and every VTF creation tool
+will create the thumbnail with the `DXT1` format. The size of the thumbnail is always observed to be 16x16. Custom sizes
+should work, but there's no need to go higher, or deviate from what Valve's official tooling produces.
 
 {{<figure src="fig_thumb.webp" alt="A diagram of the base image being used to create the thumbnail and the reflectivity vector." position="center" caption="The base image is used to calculate both the thumbnail and the reflectivity vector." captionPosition="center">}}
 
-The `flags` field controls several things, although it's also used by `vtex`, Valve's texture compiler, to store data about the VTF while it's
-being created. Some flags only have meaning in `vtex`, and some flags only have meaning in the engine. The list of flags seems to change slightly
-every VTF version, but one important flag is the cubemap flag (`2^14`). When this flag is enabled, the VTF has either 6 or 7 faces, the first 6
-forming a cubemap and the 7th either being garbage data or a spheremap when present. When the cubemap flag is present VTF v7.0 has 6 faces, while
-v7.1 has 7 faces. Unfortunately, Valve has broken their own rules in regards to the presence of the spheremap in official VTFs in the past, so
-the only way to know for sure if the spheremap is or isn't present is to check the size of the VTF's image data. Fortunately, if the VTF is outside
-the version range v7.1-7.4 (inclusive), we know for sure the spheremap cannot exist.
+The `flags` field controls several things, although it's also used by `vtex`, Valve's texture compiler, to store data
+about the VTF while it's being created. Some flags only have meaning in `vtex`, and some flags only have meaning in the
+engine. The list of flags seems to change slightly every VTF version, but one important flag is the cubemap flag
+(`2^14`). When this flag is enabled, the VTF has either 6 or 7 faces, the first 6 forming a cubemap and the 7th either
+being garbage data or a spheremap when present. When the cubemap flag is present VTF v7.0 has 6 faces, while v7.1 has 7
+faces. Unfortunately, Valve has broken their own rules in regards to the presence of the spheremap in official VTFs in
+the past, so the only way to know for sure if the spheremap is or isn't present is to check the size of the VTF's image
+data. Fortunately, if the VTF is outside the version range v7.1-7.4 (inclusive), we know for sure the spheremap cannot
+exist.
 
-The `frameCount` field controls the number of frames the VTF stores. Frames are used for animated textures, and the frame currently rendered by the
-game is controlled by the material using the texture. The `startFrame` is the default value for the current frame (not very complicated).
+The `frameCount` field controls the number of frames the VTF stores. Frames are used for animated textures, and the
+frame currently rendered by the game is controlled by the material using the texture. The `startFrame` is the default
+value for the current frame (not very complicated).
 
-VTF v7.0-7.1 can't store volumetric textures, despite the fact that DDS can. They might not have cared to implement support here, since volumetric
-textures aren't used anywhere in Valve-published Source engine games (or really anywhere else as far as I can tell). VTF v7.2 adds support for
-volumetric textures (the only change to the format). At this point in the timeline we're post-Half-Life 2 release, so they might have been doing
-internal experiments that would necessitate this change.
+VTF v7.0-7.1 can't store volumetric textures, despite the fact that DDS can. They might not have cared to implement
+support here, since volumetric textures aren't used anywhere in Valve-published Source engine games (or really anywhere
+else as far as I can tell). VTF v7.2 adds support for volumetric textures (the only change to the format). At this point
+in the timeline we're post-Half-Life 2 release, so they might have been doing internal experiments that would
+necessitate this change.
 
 {{<code language="cpp" title="VTF Header with Depth">}}
 #pragma pack(push, 16)
@@ -204,12 +212,13 @@ Now that volumetric textures are in play, we can properly visualize how image da
 
 </div>
 
-One interesting thing to note is that mipmaps are stored in reverse compared to DDS, going **smallest to largest**. I don't know for sure, but my
-theory is they made this change so less of the file would need to be loaded when loading smaller mip levels from disk. I also don't think the order
-would matter too much these days.
+One interesting thing to note is that mipmaps are stored in reverse compared to DDS, going **smallest to largest**. I
+don't know for sure, but my theory is they made this change so less of the file would need to be loaded when loading
+smaller mip levels from disk. I also don't think the order would matter too much these days.
 
-Another important consideration is that 3D cubemap textures (cubemaps with a nonzero value for depth) are technically possible to create, but are
-treated as invalid by the engine. Thus, the face count and the image depth cannot be greater than 1 simultaneously.
+Another important consideration is that 3D cubemap textures (cubemaps with a nonzero value for depth) are technically
+possible to create, but are treated as invalid by the engine. Thus, the face count and the image depth cannot be greater
+than 1 simultaneously.
 
 </section>
 
@@ -219,8 +228,8 @@ treated as invalid by the engine. Thus, the face count and the image depth canno
 
 ### Modern VTF (v7.3-7.5)
 
-VTF v7.3 is where Valve starts to pull away from copying DDS, and attempt to make it a nicer container for more kinds of texture metadata by
-introducing the resource system.
+VTF v7.3 is where Valve starts to pull away from copying DDS, and attempt to make it a nicer container for more kinds of
+texture metadata by introducing the resource system.
 
 {{<code language="cpp" title="VTF Header with Resources">}}
 #pragma pack(push, 16)
@@ -247,24 +256,27 @@ struct VTF_Resource {
 };
 {{</code>}}
 
-Resources are stored after the VTF header in the form of the given struct. Each resource entry counts toward the overall `headerSize` as well.
-The type is a three character code used to identify the resource. There is currently only one resource flag (`2^2`), controlling the location
-of the resource's data. If this flag is *not* present, the resource data field holds an absolute offset to the data in the VTF file. If the
-flag *is* present, the resource data field holds the resource's data. This is more efficient for resources that only need to store four bytes
-of data or less. On non-console platforms the maximum amount of resources in a VTF is 32, but there quite literally are not enough resource
-types to ever hit this maximum.
+Resources are stored after the VTF header in the form of the given struct. Each resource entry counts toward the overall
+`headerSize` as well. The type is a three character code used to identify the resource. There is currently only one
+resource flag (`2^2`), controlling the location of the resource's data. If this flag is *not* present, the resource data
+field holds an absolute offset to the data in the VTF file. If the flag *is* present, the resource data field holds the
+resource's data. This is more efficient for resources that only need to store four bytes of data or less. On non-console
+platforms the maximum amount of resources in a VTF is 32, but there quite literally are not enough resource types to
+ever hit this maximum.
 
-The only required resource in a VTF file is the image data. Thumbnails are technically not necessary to load the VTF, although they're highly
-recommended to always include.
+The only required resource in a VTF file is the image data. Thumbnails are technically not necessary to load the VTF,
+although they're highly recommended to always include.
 
-The thumbnail and image data are now both considered "legacy" resources, appearing in the resource entry list but working exactly as they did
-before. The only difference is their beginning position in the file, which is now controlled by the resource data field, storing the offset to
-the thumbnail or image data respectively. The non-legacy resources, if not stored in the header, store a `uint32_t` just before their data,
-holding the length of the resource data (including this integer).
+The thumbnail and image data are now both considered "legacy" resources, appearing in the resource entry list but
+working exactly as they did before. The only difference is their beginning position in the file, which is now controlled
+by the resource data field, storing the offset to the thumbnail or image data respectively. The non-legacy resources, if
+not stored in the header, store a `uint32_t` just before their data, holding the length of the resource data (including
+this integer).
 
-Note that due to overzealous optimization, resource entries in the header need to be sorted from lowest numeric resource ID to highest numeric
-resource ID. I found this out the hard way, and you may not even run into any issues writing unsorted resource entries until a VTF starts to
-break out of nowhere. Resource entries can be written in any order for VTFs used by the Strata Source engine branch.
+Note that due to overzealous optimization, resource entries in the header need to be sorted from lowest numeric resource
+ID to highest numeric resource ID. I found this out the hard way, and you may not even run into any issues writing
+unsorted resource entries until a VTF starts to break out of nowhere. Resource entries can be written in any order for
+VTFs used by the Strata Source engine branch.
 
 This is the full list of VTF resources as of VTF v7.5, sorted lowest to highest.
 
@@ -278,14 +290,16 @@ This is the full list of VTF resources as of VTF v7.5, sorted lowest to highest.
 | KeyValues Data | `"KVD"` (4478539) | No | Holds a string which is *not* null-terminated, specified to be valid KeyValues 1 data. Unused by the engine, is used in third-party tooling to add various information like the texture author and creation date. |
 | Extra Texture Flags | `"TSO"` (5198676) | Yes | Stores extra texture flags, which can be used in mods for game-specific purposes. Unused by the engine in official Valve games, unknown if it's used in other games. I have never encountered a VTF in the wild with this resource. |
 
-As for differences between VTF v7.3, v7.4, and v7.5, v7.3 and v7.4 are functionally identical. As previously stated spheremaps were deprecated in
-v7.4 and removed in v7.5. v7.5 is unsupported in most Source engine branches before Alien Swarm, but since it's nearly identical to v7.4, changing
-the version in the header and adding a dummy spheremap if the texture is a cubemap is enough to convince the engine to load it.
+As for differences between VTF v7.3, v7.4, and v7.5, v7.3 and v7.4 are functionally identical. As previously stated
+spheremaps were deprecated in v7.4 and removed in v7.5. v7.5 is unsupported in most Source engine branches before Alien
+Swarm, but since it's nearly identical to v7.4, changing the version in the header and adding a dummy spheremap if the
+texture is a cubemap is enough to convince the engine to load it.
 
 ### Strata Source VTF (v7.6)
 
-Strata Source, a community-maintained fork of the engine, has made some additions to the format to support CPU compression (usually in tandem with
-GPU compression), resulting in a new version of the format. VTF v7.6's header is identical to VTF v7.5.
+Strata Source, a community-maintained fork of the engine, has made some additions to the format to support CPU
+compression (usually in tandem with GPU compression), resulting in a new version of the format. VTF v7.6's header is
+identical to VTF v7.5.
 
 {{<code language="cpp" title="VTF Header with Compression">}}
 #pragma pack(push, 16)
@@ -296,14 +310,15 @@ struct VTF_Header_76 : public VTF_Header_75 {};
 #pragma pack(pop)
 {{</code>}}
 
-Where v7.6 differs is in the new `"AXC"` resource, which is optional and sandwiched between the `"CRC"` and `"LOD"` resources in the resource
-entry list.
+Where v7.6 differs is in the new `"AXC"` resource, which is optional and sandwiched between the `"CRC"` and `"LOD"`
+resources in the resource entry list.
 
 | Resource Name  | Resource ID | Stored in Header? | Description of Data |
 |---|:---:|:---:|---|
 | Auxiliary Compression Info | `"AXC"` (4413505) | No | Stores the compression type and strength, as well as the compressed sizes of each individual image. See the description below. |
 
-If the `"AXC"` resource is present, the image data is compressed. The original implementation of the resource looks like this.
+If the `"AXC"` resource is present, the image data is compressed. The original implementation of the resource looks like
+this.
 
 {{<code language="cpp" title="First Public `\"AXC\"` Resource Iteration">}}
 struct AXC_V1 {
@@ -315,12 +330,14 @@ struct AXC_V1 {
 {{</code>}}
 
 This version of the `"AXC"` resource always uses the [Deflate](https://en.wikipedia.org/wiki/Deflate) compression method. The compression
-strength is unnecessary at runtime, and stores the level of compression used when creating the texture. For Deflate this value can be
-between -1 and 9, inclusive. If the compression strength is 0, the rest of the resource is ignored, since 0 means no compression took place.
+strength is unnecessary at runtime, and stores the level of compression used when creating the texture. For Deflate this
+value can be between -1 and 9, inclusive. If the compression strength is 0, the rest of the resource is ignored, since 0
+means no compression took place.
 
-The compressed sizes store the size in bytes of every image that the VTF holds. This is typically calculated from the image dimensions and format,
-but compression size is non-deterministic so it must be stored. The compressed size layout is as follows. Note that if the texture is a volumetric
-texture, the entire 3D texture at the given mip, frame, and face level is compressed in one block.
+The compressed sizes store the size in bytes of every image that the VTF holds. This is typically calculated from the
+image dimensions and format, but compression size is non-deterministic so it must be stored. The compressed size layout
+is as follows. Note that if the texture is a volumetric texture, the entire 3D texture at the given mip, frame, and face
+level is compressed in one block.
 
 ```json
 "mipmaps" // 0 - mipCount
@@ -335,8 +352,8 @@ texture, the entire 3D texture at the given mip, frame, and face level is compre
 }
 ```
 
-Given this information, it is possible to access the compressed size of an image at a given mip, frame, and face level by using the following
-formula.
+Given this information, it is possible to access the compressed size of an image at a given mip, frame, and face level
+by using the following formula.
 
 {{<code language="cpp" title="Compressed Image Size Formula">}}
 uint32_t compressedSizeAt(AXC_Old axc, uint8_t mip, uint16_t frame, uint8_t face) {
@@ -348,15 +365,15 @@ uint32_t compressedSizeAt(AXC_Old axc, uint8_t mip, uint16_t frame, uint8_t face
 }
 {{</code>}}
 
-When a VTF is compressed, the position of an image at a given mip, frame, and face level relative to the beginning of the image data resource
-can be found by summing the sizes of all the compressed images that came before it. The image data is tightly packed (if it wasn't compression
-would be rather pointless).
+When a VTF is compressed, the position of an image at a given mip, frame, and face level relative to the beginning of
+the image data resource can be found by summing the sizes of all the compressed images that came before it. The image
+data is tightly packed (if it wasn't compression would be rather pointless).
 
 ---
 
-A few years after the introduction of VTF v7.6, I updated it to support [Zstd](https://en.wikipedia.org/wiki/Zstd) compression in addition to
-Deflate. From my testing Zstd doesn't have a significant advantage in compression size, but it does have a significant advantage in decompression
-speed. The new `"AXC"` resource looks like this.
+A few years after the introduction of VTF v7.6, I updated it to support [Zstd](https://en.wikipedia.org/wiki/Zstd) compression in addition to Deflate.
+From my testing Zstd doesn't have a significant advantage in compression size, but it does have a significant advantage
+in decompression speed. The new `"AXC"` resource looks like this.
 
 {{<code language="cpp" title="Latest Public `\"AXC\"` Resource Iteration">}}
 struct AXC_V2 {
@@ -368,46 +385,52 @@ struct AXC_V2 {
 };
 {{</code>}}
 
-By splitting the compression strength into two shorts, since compression strength was only ever used to store a value between -1 and 9 inclusive,
-and VTF is stored in little endian, we can take advantage of the empty space to store the compression method in a backwards-compatible way. There
-are three accepted value ranges for `compressionMethod`.
+By splitting the compression strength into two shorts, since compression strength was only ever used to store a value
+between -1 and 9 inclusive, and VTF is stored in little endian, we can take advantage of the empty space to store the
+compression method in a backwards-compatible way. There are three accepted value ranges for `compressionMethod`.
 
 - <=0: Identifies the first iteration of AXC, using Deflate compression.
 - 8: The latest iteration of AXC, using Deflate compression.
 - 93: The latest iteration of AXC, using Zstd compression.
 
-Note that since the compression strength value is useless at runtime, third-party tooling expecting the old `"AXC"` resource will continue to work
-with new Deflate-compressed VTFs. Programs expecting the new `"AXC"` resource should also load the old AXC resource correctly assuming they handle
-`compressionMethod` correctly. For these reasons the resource is not versioned, as making a separate version would actually do more harm than good.
+Note that since the compression strength value is useless at runtime, third-party tooling expecting the old `"AXC"`
+resource will continue to work with new Deflate-compressed VTFs. Programs expecting the new `"AXC"` resource should also
+load the old AXC resource correctly assuming they handle `compressionMethod` correctly. For these reasons the resource
+is not versioned, as making a separate version would actually do more harm than good.
 
-Although `minizip-ng` is not used in the engine or in any third-party tooling I've seen, `compressionMethod` copies its defines for
-compression method types. The door is left open for other compression methods, although there's not much of a point in adding new ones.
+Although `minizip-ng` is not used in the engine or in any third-party tooling I've seen, `compressionMethod` copies its
+defines for compression method types. The door is left open for other compression methods, although there's not much of
+a point in adding new ones.
 
 ## Unspoken Requirements / Things to Know
 
-A few VTF requirements aren't immediately obvious, and sometimes requirements that people will tell you about don't actually exist. Let's go over all of
-them.
+A few VTF requirements aren't immediately obvious, and sometimes requirements that people will tell you about don't
+actually exist. Let's go over all of them.
 
 #### Texture Dimensions
 
-Some say a VTF's image dimensions must not stray from the path of the powers of two. They are utter fools, too cowardly to taste the sweet forbidden
-fruit of non-PO2 dimensions. Non-PO2 sized textures may not have worked well in the past, but in modern times on modern hardware they are fine, and
-don't seem to cause any issues in Source from my testing. Use non-PO2 textures sparingly, but don't be afraid of them if they're convenient. (Side note,
-the dimension for a mip level below an image that has a dimension that doesn't divide evenly by 2 will be the result of the division plus one (rounded
-up). For example, if an image has dimensions 111x64, the mip level below that image is expected to have dimensions 56x32.)
+Some say a VTF's image dimensions must not stray from the path of the powers of two. They are utter fools, too cowardly
+to taste the sweet forbidden fruit of non-PO2 dimensions. Non-PO2 sized textures may not have worked well in the past,
+but in modern times on modern hardware they are fine, and don't seem to cause any issues in Source from my testing. Use
+non-PO2 textures sparingly, but don't be afraid of them if they're convenient. (Side note, the dimension for a mip level
+below an image that has a dimension that doesn't divide evenly by 2 will be the result of the division plus one (rounded
+up). For example, if an image has dimensions 111x64, the mip level below that image is expected to have dimensions
+56x32.)
 
-That being said, if a VTF is using a compressed format such as `DXTn`, `BCn`, or `ATIxN` its dimensions must be a *multiple* of 4. Compressed formats
-require 4x4 pixel blocks throughout the image. This is also why mip levels lower than 4x4 sometimes look very weird for compressed formats.
+That being said, if a VTF is using a compressed format such as `DXTn`, `BCn`, or `ATIxN` its dimensions must be a
+*multiple* of 4. Compressed formats require 4x4 pixel blocks throughout the image. This is also why mip levels lower
+than 4x4 sometimes look very weird for compressed formats.
 
 #### Spheremaps
 
-Spheremaps are required for VTF cubemaps with a version between v7.1-7.4 inclusive, but they are never used by the engine. If you are making a
-program to create cubemap VTFs feel free to leave the spheremap blank, or insert a doodle.
+Spheremaps are required for VTF cubemaps with a version between v7.1-7.4 inclusive, but they are never used by the
+engine. If you are making a program to create cubemap VTFs feel free to leave the spheremap blank, or insert a doodle.
 
 #### Flags
 
 - When creating a VTF with no mipmaps, the `NO_MIP` and `NO_LOD` flags should be applied.
-- When creating a VTF with a format that supports transparency, either the `ONE_BIT_ALPHA` flag or the `MULTI_BIT_ALPHA` flag must be applied.
+- When creating a VTF with a format that supports transparency, either the `ONE_BIT_ALPHA` flag or the `MULTI_BIT_ALPHA`
+  flag must be applied.
 - When creating a cubemap VTF, the `ENVMAP` flag should be applied.
 
 See [Appendix A](#appendix-a-vtf-v75-76-flags) for more information on flags.
@@ -447,12 +470,12 @@ Sorry!
 
 ## Appendix B: Supported Image Formats
 
-Unfortunately the list of supported formats is not tied to a VTF version, rather it is tied to the the branch of the Source engine you're using.
-Fortunately the list of formats common to all branches is fairly extensive. Check [the Valve Developer Wiki](https://developer.valvesoftware.com/wiki/VTF_(Valve_Texture_Format))
-for a listing with more format-specific information.
+Unfortunately the list of supported formats is not tied to a VTF version, rather it is tied to the the branch of the
+Source engine you're using. Fortunately the list of formats common to all branches is fairly extensive. Check
+[the Valve Developer Wiki](https://developer.valvesoftware.com/wiki/VTF_(Valve_Texture_Format)) for a listing with more format-specific information.
 
-SDK2013 is a bit of a dead end in regards to formats, every engine branch created after Alien Swarm should support Alien Swarm's extra formats
-in theory (replacing SDK2013's formats).
+SDK2013 is a bit of a dead end in regards to formats, every engine branch created after Alien Swarm should support Alien
+Swarm's extra formats in theory (replacing SDK2013's formats).
 
 This listing also does not include console-specific formats.
 
