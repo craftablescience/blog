@@ -149,8 +149,12 @@ The thumbnail is a low-resolution copy of the base image, which the engine uses 
 general information about the brightness of the texture. It needs to know this information in 2D space, so using the
 reflectivity vector doesn't work. The thumbnail format should always be treated as `DXT1` even if the format field is
 different, because there are a few official VTFs that have the wrong format in this field, and every VTF creation tool
-will create the thumbnail with the `DXT1` format. The size of the thumbnail is always observed to be 16x16. Custom sizes
-should work, but there's no need to go higher, or deviate from what Valve's official tooling produces.
+will create the thumbnail with the `DXT1` format. For VTFs created using Valve's own tooling, the size of the thumbnail
+is always observed to be 16x16, as long as the image is square. If the image is not square, the thumbnail size will be
+proportional to the image dimensions, with the largest dimension being 16 (so if the image is 2048x1024, the thumbnail
+will be 16x8). This behavior is not a hard requirement, and thumbnails that have a different aspect ratio from their
+source image will still work. Custom sized thumbnails should also work, but there's no need to go higher, or deviate
+from what Valve's official tooling produces.
 
 {{<figure src="fig_thumb.webp" alt="A diagram of the base image being used to create the thumbnail and the reflectivity vector." position="center" caption="The base image is used to calculate both the thumbnail and the reflectivity vector." captionPosition="center">}}
 
