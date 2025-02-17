@@ -70,11 +70,11 @@ struct DDS_Header {
 - `format` is the format of the image data stored in the file.
 - `caps1` and `caps2` together define the type of the stored texture (volume texture? cubemap texture?).
 
-Immediately following this header is the image data.
+Immediately following this header is the image data. The entire file looks something like this image.
 
 </section>
 
-<!--{{<image src="fig_dds.webp" alt="A diagram of the structure of a DDS file. The header is at the beginning of the file, and immediately following it are each mip level of the texture, going from largest to smallest." style="margin-top: 0; margin-left: 16px; object-fit: contain">}}-->
+{{<image src="fig_dds.webp" alt="A diagram of the structure of a DDS file. The header is at the beginning of the file, and immediately following it are each mip level of the texture, going from largest to smallest." style="margin-top: 0; margin-left: 16px; object-fit: contain">}}
 
 </div>
 
@@ -156,7 +156,7 @@ will be 16x8). This behavior is not a hard requirement, and thumbnails that have
 source image will still work. Custom sized thumbnails should also work, but there's no need to go higher, or deviate
 from what Valve's official tooling produces.
 
-<!--{{<figure src="fig_thumb.webp" alt="A diagram of the base image being used to create the thumbnail and the reflectivity vector." position="center" caption="The base image is used to calculate both the thumbnail and the reflectivity vector." captionPosition="center">}}-->
+{{<figure src="fig_thumb.webp" alt="A diagram of the base image being used to create the thumbnail and the reflectivity vector." position="center" caption="The base image is used to calculate both the thumbnail and the reflectivity vector." captionPosition="center">}}
 
 The `flags` field controls several things, although it's also used by `vtex`, Valve's texture compiler, to store data
 about the VTF while it's being created. Some flags only have meaning in `vtex`, and some flags only have meaning in the
@@ -226,7 +226,7 @@ than 1 simultaneously.
 
 </section>
 
-<!--{{<image src="fig_vtf.webp" alt="A diagram of the structure of a VTF file. The header is at the beginning of the file. Immediately following it is the thumbnail, followed by each mip level of the texture, going from smallest to largest" style="margin-top: 0; margin-left: 16px; object-fit: contain">}}-->
+{{<image src="fig_vtf.webp" alt="A diagram of the structure of a VTF file. The header is at the beginning of the file. Immediately following it is the thumbnail, followed by each mip level of the texture, going from smallest to largest" style="margin-top: 0; margin-left: 16px; object-fit: contain">}}
 
 </div>
 
