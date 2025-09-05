@@ -433,9 +433,9 @@ engine. If you are making a program to create cubemap VTFs feel free to leave th
 
 #### Flags
 
-- When creating a VTF with no mipmaps, the `NO_MIP` and `NO_LOD` flags should be applied.
-- When creating a VTF with a format that supports transparency, either the `ONE_BIT_ALPHA` flag or the `MULTI_BIT_ALPHA`
-  flag must be applied.
+- When creating a VTF with no mipmaps, the `NOMIP` and `NOLOD` flags should be applied.
+- When creating a VTF with a format that supports transparency, either the `ONEBITALPHA` flag or the `EIGHTBITALPHA`
+  flag must be applied. (Yes, the `EIGHTBITALPHA` flag actually means multi-bit alpha. It's a bad name.)
 - When creating a cubemap VTF, the `ENVMAP` flag should be applied.
 
 See [Appendix A](#appendix-a-more-information-on-flags) for more information on flags.
@@ -529,65 +529,65 @@ This listing also does not include console-specific formats.
 
 ### All Branches
 
-| Format | ID | Extra Information |
-|---|:---:|---|
-| `RGBA8888` | 0 |
-| `ABGR8888` | 1 |
-| `RGB888` | 2 |
-| `BGR888` | 3 |
-| `RGB565` | 4 |
-| `I8` | 5 | Greyscale, luminance |
-| `IA88` | 6 | Greyscale, luminance with alpha |
-| `P8` | 7 | Uses a palette. Unclear how a palette would be specified, likely a holdover from GoldSrc. I haven't observed this format in any official or unofficial VTFs. |
-| `A8` | 8 |
-| `RGB888_BLUESCREEN` | 9 | Identical to `RGB888`, except when the color is `0x0000FF` the color is interpreted as transparent instead. |
-| `BGR888_BLUESCREEN` | 10 | Identical to `BGR888`, except when the color is `0xFF0000` the color is interpreted as transparent instead. |
-| `ARGB8888` | 11 |
-| `BGRA8888` | 12 |
-| `DXT1` | 13 |
-| `DXT3` | 14 |
-| `DXT5` | 15 | 
-| `BGRX8888` | 16 |
-| `BGR565` | 17 |
-| `BGRX5551` | 18 |
-| `BGRA4444` | 19 |
-| `DXT1_ONE_BIT_ALPHA` | 20 |
-| `BGRA5551` | 21 |
-| `UV88` | 22 |
-| `UVWQ8888` | 23 |
-| `RGBA16161616F` | 24 |
-| `RGBA16161616` | 25 |
-| `UVLX8888` | 26 |
-| `R32F` | 27 |
-| `RGB323232F` | 28 |
-| `RGBA32323232F` | 29 |
+| Format               | ID | Extra Information                                                                                                                                            |
+|----------------------|:--:|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `RGBA8888`           | 0  |
+| `ABGR8888`           | 1  |
+| `RGB888`             | 2  |
+| `BGR888`             | 3  |
+| `RGB565`             | 4  |
+| `I8`                 | 5  | Greyscale, luminance                                                                                                                                         |
+| `IA88`               | 6  | Greyscale, luminance with alpha                                                                                                                              |
+| `P8`                 | 7  | Uses a palette. Unclear how a palette would be specified, likely a holdover from GoldSrc. I haven't observed this format in any official or unofficial VTFs. |
+| `A8`                 | 8  |                                                                                                                                                              |
+| `RGB888_BLUESCREEN`  | 9  | Identical to `RGB888`, except when the color is `0x0000FF` the color is interpreted as transparent instead.                                                  |
+| `BGR888_BLUESCREEN`  | 10 | Identical to `BGR888`, except when the color is `0xFF0000` the color is interpreted as transparent instead.                                                  |
+| `ARGB8888`           | 11 |
+| `BGRA8888`           | 12 |
+| `DXT1`               | 13 |
+| `DXT3`               | 14 |
+| `DXT5`               | 15 |
+| `BGRX8888`           | 16 |
+| `BGR565`             | 17 |
+| `BGRX5551`           | 18 |
+| `BGRA4444`           | 19 |
+| `DXT1_ONE_BIT_ALPHA` | 20 | This format does not function in-game. Use `DXT1` with either alpha flag checked (preferably `ONEBITALPHA`) instead.                                         |
+| `BGRA5551`           | 21 |
+| `UV88`               | 22 |
+| `UVWQ8888`           | 23 |
+| `RGBA16161616F`      | 24 |
+| `RGBA16161616`       | 25 |
+| `UVLX8888`           | 26 |
+| `R32F`               | 27 |
+| `RGB323232F`         | 28 |
+| `RGBA32323232F`      | 29 |
 
 ### Extra SDK2013 Formats
 
-| Format | ID | Extra Information |
-|---|:---:|---|
-| `EMPTY` | 36 | Should not be used in VTFs, specifies a pixel size of 0 bytes. |
-| `ATI2N` | 37 | Broken in all Source engine branches except Strata Source. |
-| `ATI1N` | 38 | Broken in all Source engine branches except Strata Source. |
+| Format  | ID  | Extra Information                                              |
+|---------|:---:|----------------------------------------------------------------|
+| `EMPTY` | 36  | Should not be used in VTFs, specifies a pixel size of 0 bytes. |
+| `ATI2N` | 37  | Broken in all Source engine branches except Strata Source.     |
+| `ATI1N` | 38  | Broken in all Source engine branches except Strata Source.     |
 
 ### Extra Alien Swarm (and beyond) Formats
 
-| Format | ID | Extra Information |
-|---|:---:|---|
-| `RG1616F` | 30 |
-| `RG3232F` | 31 |
-| `RGBX8888` | 32 |
-| `EMPTY` | 33 | Should not be used in VTFs, specifies a pixel size of 0 bytes. |
-| `ATI2N` | 34 | Broken in all Source engine branches except Strata Source. |
-| `ATI1N` | 35 | Broken in all Source engine branches except Strata Source. |
+| Format        | ID | Extra Information                                              |
+|---------------|:--:|----------------------------------------------------------------|
+| `RG1616F`     | 30 |
+| `RG3232F`     | 31 |
+| `RGBX8888`    | 32 |
+| `EMPTY`       | 33 | Should not be used in VTFs, specifies a pixel size of 0 bytes. |
+| `ATI2N`       | 34 | Broken in all Source engine branches except Strata Source.     |
+| `ATI1N`       | 35 | Broken in all Source engine branches except Strata Source.     |
 | `RGBA1010102` | 36 |
 | `BGRA1010102` | 37 |
-| `R16F` | 38 |
+| `R16F`        | 38 |
 
 ### Extra Strata Source Formats
 
-| Format | ID | Extra Information |
-|---|:---:|---|
-| `R8` | 69 | Identical to `I8`, except only using the red channel instead of greyscale. |
-| `BC7` | 70 |
-| `BC6H` | 71 | Specifically the signed half-float variant. |
+| Format | ID | Extra Information                                                          |
+|--------|:--:|----------------------------------------------------------------------------|
+| `R8`   | 69 | Identical to `I8`, except only using the red channel instead of greyscale. |
+| `BC7`  | 70 |
+| `BC6H` | 71 | Specifically the signed half-float variant.                                |
