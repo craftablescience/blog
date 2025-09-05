@@ -131,7 +131,7 @@ Note that this struct is 16-byte aligned, which is why the reflectivity vector h
   space.
 - `width` and `height` is the same as in DDS, the width and height of the base mip.
 - `flags` is actually different than DDS, and is more what you'd expect from a field named flags. It stores flags. See
-  [Appendix A](#appendix-a-vtf-flags) for more information on supported flags.
+  [Appendix A](#appendix-a-more-information-on-flags) for more information on supported flags.
 - `frameCount` is the number of "frames", and `startFrame` is the first frame in the animation sequence. Again, more on
   this later!
 - `reflectivity` stores the overall reflectivity of the texture, to be used in radiosity calculations. Valve's method of
@@ -437,7 +437,7 @@ engine. If you are making a program to create cubemap VTFs feel free to leave th
   flag must be applied.
 - When creating a cubemap VTF, the `ENVMAP` flag should be applied.
 
-See [Appendix A](#appendix-a-vtf-v75-76-flags) for more information on flags.
+See [Appendix A](#appendix-a-more-information-on-flags) for more information on flags.
 
 ## Appendix A: More Information on Flags
 
