@@ -1,6 +1,7 @@
 +++
 title = "Format Deep Dive: VTF (Valve Texture Format)"
 date = "2024-11-26"
+lastmod = "2025-09-05"
 author = "Laura Lewis"
 cover = "posts/format_deep_dive_vtf/cover.webp"
 tags = ["source-engine", "file-format"]

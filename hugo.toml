@@ -17,7 +17,7 @@ pagerSize = 999
   fullWidthTheme = false
   centerTheme = true
   autoCover = false
-  showLastUpdated = false
+  showLastUpdated = true
   enableGitInfo = false
   Toc = true
 
