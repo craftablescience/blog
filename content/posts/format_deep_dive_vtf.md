@@ -475,7 +475,7 @@ This list covers all the flags the engine uses that are valid to set in a VTF.
 
 | Flag                | Value  | Description                                                   |
 |---------------------|:------:|---------------------------------------------------------------|
-| `ALL_MIPS`          | `2^10` | **Unused in v7.5+** Renamed from `MINMIP`.                    |
+| `ALL_MIPS`          | `2^10` | **Unused in v7.5+.** Renamed from `MINMIP`.                   |
 | `VERTEXTEXTURE`     | `2^26` | Texture is a vertex texture for `VertexLitGeneric` materials. |
 | `SSBUMP`            | `2^27` | Texture is an ssbump.                                         |
 | `BORDER`            | `2^29` | Clamp to the texture border color on all axes.                |
