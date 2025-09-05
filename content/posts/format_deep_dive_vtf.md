@@ -439,38 +439,81 @@ engine. If you are making a program to create cubemap VTFs feel free to leave th
 
 See [Appendix A](#appendix-a-vtf-v75-76-flags) for more information on flags.
 
-## Appendix A: VTF v7.5-7.6 Flags
+## Appendix A: More Information on Flags
 
-Most VTF flags are either internal to `vtex` or fairly esoteric. There are a few important ones though. I've left out
-the ones that only exist for `vtex`, but kept the ones that are plain weird since the engine likely uses them.
+Most VTF flags are either internal to `vtex` or internal to the engine. There are a few important ones though.
+This list covers all the flags the engine uses that are valid to set in a VTF.
 
-Most of these flags exist for earlier VTF versions, but I don't know which ones and I want to be done writing this post.
-Sorry!
+### v7.0+
 
-| Flag | Value | Description |
-|---|:---:|---|
-| `POINT_SAMPLE` | `2^0` | Disable texture filtering when sampling from the texture. Obsolete on modern Source branches now that materials can control this as well. |
-| `TRILINEAR` | `2^1` | Always use trilinear filtering when sampling from the texture. |
-| `CLAMP_S` | `2^2` | Do not wrap on the X axis. |
-| `CLAMP_T` | `2^3` | Do not wrap on the Y axis. |
-| `ANISOTROPIC` | `2^4` | Always use anisotropic filtering when sampling from the texture. |
-| `HINT_DXT5` | `2^5` | Unsure. The Valve Developer Wiki says it's used in skyboxes to remove visible seams, but what a weird name for that. |
-| `SRGB` | `2^6` | Texture uses the sRGB color space (sRGB to linear gamma correction will be applied on the GPU). |
-| `NORMAL` | `2^7` | Texture is a normal map. |
-| `NO_MIP` | `2^8` | Texture has no mipmaps. Should be present on every texture with 1 mip level. |
-| `NO_LOD` | `2^9` | Texture has no LOD (it does not use lower mip levels than the base). This flag is utterly useless and should be present when `NO_MIP` is present. |
-| `LOAD_LOWEST_MIPS` | `2^10` | Allows the game to load mip levels with dimensions below 32x32. Should only be used for uncompressed formats in my opinion, because compressed formats typically have broken mips below 4x4. |
-| `PROCEDURAL` | `2^11` | Texture was either created in code, or will be modified in code. |
-| `ONE_BIT_ALPHA` | `2^12` | Should be set for all VTFs storing texture data with one bit alpha. |
-| `MULTI_BIT_ALPHA` | `2^13` | Should be set for all VTFs storing texture data with more than one bit of alpha. |
-| `ENVMAP` | `2^14` | Set if the VTF is storing a cubemap. |
-| `NO_DEBUG_OVERRIDE` | `2^17` | Unknown. |
-| `SINGLE_COPY` | `2^18` | Unknown. |
-| `NO_DEPTH_BUFFER` | `2^23` | Unknown. |
-| `CLAMP_U` | `2^25` | Do not wrap on the Z axis. |
-| `VERTEX_TEXTURE` | `2^26` | Texture is a vertex texture for `VertexLitGeneric` materials. |
-| `SSBUMP` | `2^27` | Texture is an ssbump. |
-| `BORDER` | `2^29` | Clamp to the texture border color on all axes. |
+| Flag                | Value  | Description                                                                                                                                                                                      |
+|---------------------|:------:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `POINTSAMPLE`       | `2^0`  | Disable texture filtering when sampling from the texture. Largely obsolete on modern Source branches (CS:GO and up) now that materials can control this.                                         |
+| `TRILINEAR`         | `2^1`  | Always use trilinear filtering when sampling from the texture.                                                                                                                                   |
+| `CLAMPS`            | `2^2`  | Do not wrap on the X axis.                                                                                                                                                                       |
+| `CLAMPT`            | `2^3`  | Do not wrap on the Y axis.                                                                                                                                                                       |
+| `ANISOTROPIC`       | `2^4`  | Always use anisotropic filtering when sampling from the texture.                                                                                                                                 |
+| `NORMAL`            | `2^7`  | Texture is a normal map.                                                                                                                                                                         |
+| `NOMIP`             | `2^8`  | Texture has no mipmaps. Should be present on every texture with 1 mip level.                                                                                                                     |
+| `NOLOD`             | `2^9`  | Texture has no LOD (it does not use lower mip levels than the base). This flag is utterly useless and should be present when `NOMIP` is present.                                                 |
+| `MINMIP`            | `2^10` | **Renamed in v7.3.** Allows the game to load mip levels with dimensions below 32x32. Should only be used for uncompressed formats, and may introduce performance regressions if used frequently. |
+| `PROCEDURAL`        | `2^11` | Texture was either created in code, or will be modified in code.                                                                                                                                 |
+| `ONEBITALPHA`       | `2^12` | Should be set for all VTFs storing texture data with one bit alpha.                                                                                                                              |
+| `EIGHTBITALPHA`     | `2^13` | Should be set for all VTFs storing texture data with more than one bit of alpha (ignore the name).                                                                                               |
+| `ENVMAP`            | `2^14` | Set if the VTF is storing a cubemap.                                                                                                                                                             |
+| `NO_DEBUG_OVERRIDE` | `2^17` | Texture cannot be modified when debugging graphics features are enabled.                                                                                                                         |
+| `SINGLE_COPY`       | `2^18` | Keep only one copy of the texture in memory(?). Unused in later versions of the engine.                                                                                                          |
+
+### v7.2+
+
+| Flag                | Value  | Description                |
+|---------------------|:------:|----------------------------|
+| `NO_DEPTH_BUFFER`   | `2^23` | Unknown.                   |
+| `CLAMPU`            | `2^25` | Do not wrap on the Z axis. |
+
+### v7.3+
+
+| Flag                | Value  | Description                                                   |
+|---------------------|:------:|---------------------------------------------------------------|
+| `ALL_MIPS`          | `2^10` | **Unused in v7.5+** Renamed from `MINMIP`.                    |
+| `VERTEXTEXTURE`     | `2^26` | Texture is a vertex texture for `VertexLitGeneric` materials. |
+| `SSBUMP`            | `2^27` | Texture is an ssbump.                                         |
+| `BORDER`            | `2^29` | Clamp to the texture border color on all axes.                |
+
+### v7.4+
+
+| Flag                | Value  | Description                                              |
+|---------------------|:------:|----------------------------------------------------------|
+| `SRGB`              | `2^6`  | **Replaced in v7.5.** Texture uses the sRGB color space. |
+
+### v7.4 (TF2-based branches)
+
+| Flag                | Value  | Description                                                  |
+|---------------------|:------:|--------------------------------------------------------------|
+| `STAGING_MEMORY`    | `2^19` | Unknown.                                                     |
+| `IMMEDIATE_CLEANUP` | `2^20` | Unknown.                                                     |
+| `IGNORE_PICMIP`     | `2^21` | Ignore `mat_picmip` and do not change the maximum mip level. |
+| `STREAMABLE_COARSE` | `2^30` | Enables "coarse" texture streaming.                          |
+| `STREAMABLE_FINE`   | `2^31` | Enables "fine" texture streaming.                            |
+
+### v7.5+
+
+| Flag            | Value  | Description                                                                                          |
+|-----------------|:------:|------------------------------------------------------------------------------------------------------|
+| `PWL_CORRECTED` | `2^6`  | Texture uses PWL correction (Xbox 360 sRGB approximation).                                           |
+| `SRGB`          | `2^19` | Same as the `SRGB` flag from v7.4, just in a different position.                                     |
+| `DEFAULT_POOL`  | `2^20` | Unknown.                                                                                             |
+| `MOST_MIPS`     | `2^28` | The inverse of `ALL_MIPS`, which is now unused. When enabled, mips below 32x32 will *not* be loaded. |
+
+### v7.5+ (CS:GO-based branches)
+
+| Flag                         | Value  | Description                                                          |
+|------------------------------|:------:|----------------------------------------------------------------------|
+| `COMBINED`                   | `2^21` | VTF file is embedded inside a "combined" model. Do not set manually. |
+| `ASYNC_DOWNLOAD`             | `2^22` | Unknown.                                                             |
+| `SKIP_INITIAL_DOWNLOAD`      | `2^24` | Unknown.                                                             |
+| `YCOCG`                      | `2^30` | Unknown.                                                             |
+| `ASYNC_SKIP_INITIAL_LOW_RES` | `2^31` | Unknown.                                                             |
 
 ## Appendix B: Supported Image Formats
 
