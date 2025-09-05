@@ -183,7 +183,7 @@ necessitate this change.
 
 // All the fields from v7.1 verbatim, plus...
 struct VTF_Header_72 : public VTF_Header_71 {
-	uint32_t depth;
+	uint16_t depth;
 };
 
 #pragma pack(pop)
